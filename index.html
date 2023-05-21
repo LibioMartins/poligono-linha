@@ -6,11 +6,16 @@
       canvas {
         border: 1px solid black;
       }
+     
+
     </style>
   </head>
   <body>
-    <canvas id="meu-canvas" width="500" height="500" onclick="clicou()"></canvas>
-    Snap:<input name="snap" id="snap" type="range" min="1" value="0" max="50" oninput="atualizarGrid()">
+    <canvas id="meu-canvas" width="500" height="500" onclick="clicou()"></canvas><br>
+    <div id="tools">
+      Snap:<input name="snap" id="snap" type="range" min="1" value="0" max="50" oninput="atualizarGrid()">
+      <input type="button" value="Desenhar poligonos" onclick="fecharPoligono()">
+    </div>
 
     <script>
       // Obtendo referência para o canvas e contexto

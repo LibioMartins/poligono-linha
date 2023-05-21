@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linha / Poligono</title>
+    <style>
+        canvas{
+            border: 2px solid black;
+            
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="1000" height="500"></canvas>
+    <input type="button" value="Linha" onclick="linha()">
+    <input type="button" value="Apagar" onclick="apagar()">
+    Snap:<input name="snap" id="snap" type="range"  min="1" value="0" max="50" list="ticks" oninput="Output.value = snap.value"list="tickmarks" >
+    <output id="Output">1</output>
+    <script>
+        var btn
+        var getXCoord
+        var getYCoord
+        var pontosx=[];//Aqui sao armazenados os pontos x
+        var pontosy=[];//Aqui sao armazenados os pontos y
+        var a
+        var clickado=false
+        var cont=0
+        var cont2=0
+   
+        function apagar(){
+            btn="apagar"
+        }
+        function linha(){
+            btn="linha"
+            var can=document.createElement("canvas"); 
+            can.height='500'
+            can.width='1000'
+            can.style.position='absolute';
+            can.style.left ='8px';
+            can.style.top ='8px';
+            can.style.background='none';
+            can.style.borderColor="lightgreen";
+
+            can.onmouseenter=(evento)=>{
+                grid=[];
+                snapvalue=0
+                do{
+                    if(snapvalue%Output.value===0){
+                    grid.push(snapvalue);
+                    }
+                    snapvalue=snapvalue+1
+                }while(snapvalue<1000);
+            }
+
+            can.onmousemove=(evento)=>{
+                var contexto=can.getContext("2d");
+                 getXCoord = event.offsetX;
+                 getYCoord = event.offsetY;
+                var snapvalx = grid.reduce(function(prev, curr) {
+                    return (Math.abs(curr - getXCoord) < Math.abs(prev - getXCoord) ? curr : prev);
+                });
+                var snapvaly = grid.reduce(function(prev, curr) {
+                    return (Math.abs(curr - getYCoord) < Math.abs(prev - getYCoord) ? curr : prev);
+                });
+                snapx=snapvalx
+                snapy=snapvaly
+                 getXCoord = snapx;
+                 getYCoord = snapy;
+                if(clickado===true){
+                    var contexto=can.getContext("2d");
+                    contexto.clearRect(0,0,1000,1000);
+                    contexto.strokeStyle="green";
+                    contexto.beginPath();
+                    contexto.moveTo(pontosx.flat()[pontosx.flat().length-1],pontosy.flat()[pontosy.flat().length-1]);
+                    contexto.lineTo(getXCoord,getYCoord);
+                    contexto.stroke();
+                    contexto.strokeStyle="black";
+                }
+            }
+
+            can.onmousedown=(evento)=>{
+                 getXCoord = snapx;
+                 getYCoord = snapy;
+                clickado=true;
+                // Tenho que fazer outro teste logico como o de baixo.
+                if(pontosx.flat().indexOf(getXCoord)>-1 && pontosy.flat().indexOf(getYCoord)>-1 && pontosx.flat().indexOf(getXCoord)===pontosy.flat().indexOf(getYCoord)){
+                    cont=0
+                    cont2=0
+                    console.log(`${getXCoord},${getYCoord}`);
+                    do{
+                        cont2=0
+                        do{
+                            if (pontosx[cont][cont2] === getXCoord && pontosy[cont][cont2] === getYCoord) {//<= o problema ta aqui.Nao ta pegando 
+                                
+                                    pontosx[cont].unshift(getXCoord);
+                                    pontosy[cont].unshift(getYCoord);
+                               
+                            }
+                            cont2=cont2+1 
+                        }while(cont2 < pontosx[cont].length && (pontosx[cont][cont2] !== getXCoord || pontosy[cont][cont2] !== getYCoord) && cont2 >= 0)
+                        cont=cont+1
+                    }while(pontosx.flat().length>cont);
+                    
+                }else{
+                    
+                    pontosx.push([getXCoord]);
+                    pontosy.push([getYCoord]);  
+                }
+    
+            }
+            
+            can.onmouseup=(evento)=>{
+                 getXCoord = snapx;
+                 getYCoord = snapy;
+                clickado=false;
+                if(pontosx.flat().indexOf(getXCoord)>-1 && pontosy.flat().indexOf(getYCoord)>-1 && pontosx.flat().indexOf(getXCoord)===pontosy.flat().indexOf(getYCoord)){
+                   
+                    cont=0
+                    cont2=0
+                    do{
+                        do{
+                            
+                            if (pontosx[cont][cont2] === getXCoord && pontosy[cont][cont2] === getYCoord) {
+                            
+                                console.log(`${cont} Segundo`);
+                                
+                                a=pontosx.flat()[pontosx.flat().length - 1];
+                                registro=pontosx[cont].push(a);
+                                a=pontosy.flat()[pontosy.flat().length - 1];
+                                registro=pontosy[cont].push(a);
+                                apaga=pontosx.pop();
+                                apaga=pontosy.pop();
+
+                            }
+
+                            cont2=cont2+1
+                        }while(pontosx[cont].length>cont2);
+                        cont=cont+1
+                    }while(pontosx.flat().length>cont);
+                    //Adicionar pontos dentro da array selecionada e depois apagar a antiga. 
+
+                }else{
+                    console.log(`${pontosx.flat().length%2} solto`);
+                    registro=pontosx[pontosx.length-1].push(getXCoord);
+                    registro=pontosy[pontosy.length-1].push(getYCoord);
+                    
+                } 
+                //Desenhar pontos de array em array aqui. 
+                cont=0
+                cont2=0
+                    do{
+                        do{
+                            const canvas = document.getElementById("canvas");
+                            const ctx = canvas.getContext("2d"); 
+                            ctx.beginPath();
+                            ctx.moveTo(pontosx[cont][cont2],pontosy[cont][cont2]);
+                            ctx.lineTo(pontosx[cont][cont2+1],pontosy[cont][cont2+1]);
+                            ctx.stroke();
+                            cont2=cont2+1
+                        }while(cont2 <= pontosx[cont].length - 1);
+                        cont = cont + 1;
+                        cont2 = 0;      
+                    }while(cont < pontosx.length);
+            }
+            document.body.appendChild(can);
+            
+        }
+       // document.body.removeChild(can); Deleta camada da anumaçao 
+    </script>
+</body>
+</html>
